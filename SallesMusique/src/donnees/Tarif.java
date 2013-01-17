@@ -1,19 +1,14 @@
 package donnees;
 
 public class Tarif {
-	private int idTarif;
 	int prix;
 	TypeSalle leTypeSalle;
 	
-	public Tarif(int id,int prix,TypeSalle typeSalle){
-		this.idTarif = id;
+	public Tarif(int prix,TypeSalle typeSalle){
 		this.prix = prix;
 		this.leTypeSalle = typeSalle;
 	}
 	
-	public int getIdentifiant(){
-		return this.idTarif;
-	}
 	
 	public int getPrix(){
 		return this.prix;

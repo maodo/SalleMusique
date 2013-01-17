@@ -1,20 +1,17 @@
 package fabriques;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import connecteur.Connexion;
 import donnees.Client;
 import donnees.Reservation;
-import donnees.Tarif;
-import donnees.TrancheHoraire;
-import donnees.TypeSalle;
+import donnees.Salle;
 
 public class FabReservation {
 	private static FabReservation FabR; 
@@ -23,6 +20,7 @@ public class FabReservation {
 	private PreparedStatement statementNouvelId;
 	private PreparedStatement statementRechercher;
 	private PreparedStatement statementLister;
+	private PreparedStatement statementResDunJour;
 	private Connection laConnexion;
 	
 	private FabReservation(){
@@ -32,10 +30,11 @@ public class FabReservation {
 	private void initRequetes(){
 		try {
 			this.laConnexion = Connexion.getInstance();
-			this.statementCreer = laConnexion.prepareStatement("INSERT INTO RESERVATION VALUES(?,?,?,?,?,?,?,?);");
-			this.statementNouvelId = laConnexion.prepareStatement("");
-			this.statementRechercher = laConnexion.prepareStatement("");
-			this.statementLister = laConnexion.prepareStatement("");
+			this.statementCreer = laConnexion.prepareStatement("INSERT INTO RESERVATION VALUES(?,?,?,?,?,?,?,?,?);");
+			this.statementNouvelId = laConnexion.prepareStatement("SELECT MAX(idReservation) FROM Reservation;");
+			this.statementRechercher = laConnexion.prepareStatement("SELECT * FROM Reservation WHERE idReservation = ?");
+			this.statementLister = laConnexion.prepareStatement("SELECT * FROM Reservation;");
+			this.statementResDunJour = laConnexion.prepareStatement("SELECT * FROM Reservation WHERE dateReservation = ?;");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -50,33 +49,44 @@ public class FabReservation {
 		return FabR;
 	}
 	
-	public Reservation rechercherReservation(int idReservation){
-		return null;
+	public Reservation rechercherReservation(int idReservation) throws SQLException{
+		Reservation laReservation = null;
+		this.statementRechercher.clearParameters();
+		this.statementRechercher.setInt(1,idReservation);
+		ResultSet rs = this.statementRechercher.executeQuery();
+		if(rs.next()){
+			Salle uneSalle = FabSalle.getInstance().rechercherSalle(rs.getInt(7));
+			Client unClient = FabClient.getInstance().rechercherClient(rs.getInt(8));
+			laReservation = new Reservation(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getDate(4),rs.getDate(5),rs.getDate(6),uneSalle,unClient,rs.getInt(9));
+		}
+		return laReservation;
 	}
 	
-	public Reservation creerReservation(int duree,Date dateReservation,
-			Date dateCommande,Date dateConfirmation,
-			Tarif leTarif,TypeSalle leTypeSalle,TrancheHoraire laTranche) throws SQLException{
-		
+	public Reservation creerReservation(int duree,int montant,Date dateReserv,Date dateCommmande,
+			Date dateConfirm,Salle uneSalle,Client unClient,int uneHeureDebut) throws SQLException{
 		int leNouvelId = this.getNouvelId();
+		System.out.println("{"+leNouvelId+"}");
 		this.statementCreer.clearParameters();
 		this.statementCreer.setInt(1,leNouvelId);
 		this.statementCreer.setInt(2,duree);
-		this.statementCreer.setDate(3,dateReservation);
-		this.statementCreer.setDate(4,dateCommande);
-		this.statementCreer.setDate(3,dateConfirmation);
-		this.statementCreer.setInt(3,leTarif.getIdentifiant());
-		this.statementCreer.setInt(3,leTypeSalle.getIdentifiant());
-		this.statementCreer.setInt(3,laTranche.getIdentifiant());
-		this.statementCreer.execute();
+		this.statementCreer.setInt(3,montant);
+		this.statementCreer.setDate(4,dateReserv);
+		this.statementCreer.setDate(5,dateCommmande);
+		this.statementCreer.setDate(6,dateConfirm);
+		this.statementCreer.setInt(7,uneSalle.getIdentifiant());
+		this.statementCreer.setInt(8,unClient.getIdentifiant());
+		this.statementCreer.setInt(9,uneHeureDebut);
+		System.out.println(statementCreer.toString());
+		boolean ret = this.statementCreer.execute();
+		System.out.println(ret);
 		
-		return this.rechercherReservation(leNouvelId);
+		return new Reservation(leNouvelId, duree, montant, dateReserv, dateCommmande, dateConfirm, uneSalle, unClient, uneHeureDebut);
 	}
 	
 	public int getNouvelId() throws SQLException{
 		ResultSet rs = this.statementNouvelId.executeQuery();
 		if(!rs.next())
-			return -1;
+			return 1;
 		else
 			return rs.getInt(1)+1;
 	}
@@ -90,5 +100,20 @@ public class FabReservation {
 		}
 		
 		return lesClients;
+	}
+
+	public List<Reservation> rechercherReservationDunJour(
+			java.util.Date laDate) throws SQLException{
+		List<Reservation> desReservations = new ArrayList<Reservation>();
+		this.statementResDunJour.clearParameters();
+		ResultSet rs = this.statementResDunJour.executeQuery();
+		while(rs.next()){
+			Salle uneSalle = FabSalle.getInstance().rechercherSalle(rs.getInt(7));
+			Client unClient = FabClient.getInstance().rechercherClient(rs.getInt(8));
+			
+			Reservation uneReservation = new Reservation(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getDate(4),rs.getDate(5),rs.getDate(6),uneSalle,unClient,rs.getInt(9));
+			desReservations.add(uneReservation);
+		}
+		return desReservations;
 	}
 }

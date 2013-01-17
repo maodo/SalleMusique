@@ -3,8 +3,8 @@ package donnees;
 public class TarifForfaitaire extends Tarif{
 	private Forfait leForfait;
 	
-	public TarifForfaitaire(int id,int prix,TypeSalle leTypeSalle,Forfait unForfait){
-		super(id,prix,leTypeSalle);
+	public TarifForfaitaire(int prix,TypeSalle leTypeSalle,Forfait unForfait){
+		super(prix,leTypeSalle);
 		this.leForfait = unForfait;
 	}
 	
@@ -12,3 +12,4 @@ public class TarifForfaitaire extends Tarif{
 		return this.leForfait;
 	}
 }
+

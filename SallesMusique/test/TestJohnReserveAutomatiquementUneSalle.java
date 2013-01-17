@@ -1,5 +1,9 @@
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.sql.Date;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import metier.ServiceReservation;
@@ -9,37 +13,51 @@ import org.junit.Test;
 
 import donnees.Client;
 import donnees.Reservation;
-import donnees.TarifForfaitaire;
+import donnees.Tarif;
 import donnees.TrancheHoraire;
 import donnees.TypeSalle;
 import fabriques.FabClient;
 import fabriques.FabReservation;
+import fabriques.FabTarifPonctuel;
+import fabriques.FabTranche;
+import fabriques.FabTypeSalle;
 
 
 public class TestJohnReserveAutomatiquementUneSalle {
 	
 	private Client leClient;
 	private Reservation laReservation;
+	private ServiceReservation servReservation;
 
 	@Before
 	public void setUp() throws SQLException{
 		this.leClient = FabClient.getInstance().rechercherClient(1);
+		this.servReservation = ServiceReservation.getInstance();
 	}
 	
 	@Test
-	public void testJohnReserveUneSalle() {
-		int duree = 4;
-		Calendar dateReservation = new GregorianCalendar(); 
-		Calendar dateCommande = new GregorianCalendar();
-		Calendar dateConfirmation = new GregorianCalendar();
-		TarifForfaitaire leTarif = FabTarif.getInstance().rechercherTarif(1);
-		TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(1);
-		TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(1);
+	public void testJohnReserveUneSalleSansForfaitPourUneHeure() throws SQLException{
+		int duree = 1;
+		GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
+		Date dateReservation = new Date(leCalendrier.getTimeInMillis());
+		TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(1);//petite salle
+		Tarif leTarif = FabTarifPonctuel.getInstance().rechercherTarifPonctuel(duree,leTypeSalle.getIdentifiant());
+		TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(1);//le matin
 		
-		this.laReservation = FabReservation.getInstance().creerReservation(duree,dateReservation,dateCommande,dateConfirmation,leTarif,leTypeSalle,laTranche);
-		ServiceReservation.getInstance().reserverSalle(this.leClient,this.laReservation);
+		this.laReservation = this.servReservation.reserverSalleAutomatiquement(leClient,
+				dateReservation,duree,leTarif,leTypeSalle,laTranche);
 		
-		assertEquals(this.laReservation.getIdentifiant(), FabReservation.getInstance().rechercherReservation(leNouvelIdReservation));
+		if(this.laReservation != null){
+			Reservation uneReservation = FabReservation.getInstance().rechercherReservation(this.laReservation.getIdentifiant());
+			assertNotNull(this.laReservation.getIdentifiant());
+			assertEquals(this.laReservation.getIdentifiant(),uneReservation.getIdentifiant());
+			System.out.println(uneReservation.getClient().getNom());
+		}else{
+			fail("La salle n'a pas été reservée");
+		}
 	}
-
+	
+	public void testJohnReserveUneSalleAvecUnForfaitValide() {
+		
+	}
 }

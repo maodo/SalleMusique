@@ -5,22 +5,28 @@ import java.sql.Date;
 public class Reservation {
 	private int idReservation;
 	private int duree;
+	private int montant;
 	private Date dateReservation;
 	private Date dateCommande;
 	private Date dateConfirmation;
-	private Tarif leTarif;
-	private TypeSalle leTypeSalle;
-	private TrancheHoraire laTranche;
+	private Salle laSalle;
+	private Client leClient;
+	private int heureDebut;
 	
-	public Reservation(int id,int duree,Date res,Date com,Date conf,Tarif unTarif,TypeSalle unTypeSalle,TrancheHoraire uneTranche){
+	public Reservation(int id,int duree,int montant,Date res,Date com,Date conf,Salle uneSalle,Client unClient,int uneHeureDebut){
 		this.idReservation = id;
 		this.duree = duree;
+		this.montant = montant;
 		this.dateReservation = res;
 		this.dateCommande = com;
 		this.dateConfirmation = conf;
-		this.leTarif = unTarif;
-		this.leTypeSalle = unTypeSalle;
-		this.laTranche = uneTranche;
+		this.laSalle = uneSalle;
+		this.leClient = unClient;
+		this.heureDebut = uneHeureDebut;
+	}
+	
+	public int getMontantTotal(){
+		return this.montant;
 	}
 	
 	public int getIdentifiant(){
@@ -43,16 +49,16 @@ public class Reservation {
 		return this.dateConfirmation;
 	}
 	
-	public Tarif getTarif(){
-		return this.leTarif;
+	public Client getClient(){
+		return this.leClient;
 	}
 	
-	public TypeSalle getTypeSalle(){
-		return this.leTypeSalle;
+	public Salle getSalle(){
+		return this.laSalle;
 	}
 	
-	public TrancheHoraire getTrancheHoraire(){
-		return this.laTranche;
+	public int getHeureDebut(){
+		return this.heureDebut;
 	}
 	
 }
