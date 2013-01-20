@@ -47,6 +47,20 @@ ALTER TABLE Client ADD constraint client_pkey PRIMARY KEY(idClient);
 INSERT INTO Client VALUES(1,'DesNeiges','AbominableHomme',0,'0836656565');
 
 
+--ForfaitClient
+CREATE TABLE ForfaitClient (
+	idForfait Integer,
+	idClient Integer,
+	credit integer,
+	dateAchat Date
+);
+ALTER TABLE ForfaitClient ADD constraint ForfaitClient_fkey_forfait FOREIGN KEY(idForfait) REFERENCES Forfait(idForfait);
+ALTER TABLE ForfaitClient ADD constraint ForfaitClient_fkey_client FOREIGN KEY(idClient) REFERENCES Client(idClient);
+ALTER TABLE ForfaitClient ADD constraint forfaitclient_pkey PRIMARY KEY(idForfait, idClient);
+
+INSERT INTO ForfaitClient values(1,1,12,'2013-01-01');
+
+
 --Plage
 CREATE TABLE Plage (
 	idPlage Integer,
