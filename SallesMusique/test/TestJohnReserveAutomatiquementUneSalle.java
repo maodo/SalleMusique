@@ -11,6 +11,7 @@ import metier.ServiceReservation;
 import org.junit.Before;
 import org.junit.Test;
 
+import connecteur.Connexion;
 import donnees.Client;
 import donnees.Reservation;
 import donnees.Tarif;
@@ -31,13 +32,13 @@ public class TestJohnReserveAutomatiquementUneSalle {
 
 	@Before
 	public void setUp() throws SQLException{
-		this.leClient = FabClient.getInstance().rechercherClient(1);
+		this.leClient = FabClient.getInstance().rechercherClient(3);
 		this.servReservation = ServiceReservation.getInstance();
 	}
 	
 	@Test
-	public void testJohnReserveUneSalleSansForfaitPourUneHeure() throws SQLException{
-		int duree = 1;
+	public void testJohnReserveUneSalleSansForfaitPourUneHeure() throws SQLException, Exception{
+		int duree = 2;
 		GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
 		Date dateReservation = new Date(leCalendrier.getTimeInMillis());
 		TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(1);//petite salle
@@ -55,6 +56,7 @@ public class TestJohnReserveAutomatiquementUneSalle {
 		}else{
 			fail("La salle n'a pas été reservée");
 		}
+		Connexion.getInstance().close();
 	}
 	
 	public void testJohnReserveUneSalleAvecUnForfaitValide() {

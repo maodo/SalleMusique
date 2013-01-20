@@ -1,7 +1,7 @@
 package metier;
 
-import java.sql.SQLException;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.List;
 
 import donnees.Client;
@@ -43,7 +43,6 @@ public class ServiceReservation {
 		List<Reservation> lesReservations = fabReservation.rechercherReservationDunJour(laDate);
 		List<Salle> sallesDispo = FabSalle.getInstance().listerSalle();
 		
-		
 		int creneauConseq = 0;
 		int heureDebut = 9;
 		if(lesReservations.isEmpty()){//aucune reservation ce jour là
@@ -52,9 +51,34 @@ public class ServiceReservation {
 			java.sql.Date dateReserv = laDate, dateConfirm = new Date(today.getTime()), dateCommande = new Date(today.getTime());
 			Salle laSalle = sallesDispo.get(1);
 			laReservation = fabReservation.creerReservation(duree, leMontant, dateReserv, dateCommande, dateConfirm, laSalle, leClient, heureDebut);
-		}
-		for(Reservation r : lesReservations){
-		
+		}else{//Il y a d'autres reservations ce jour: on va les parser
+			//On va construire l'emploi du temps d'aujourd'hui: 
+			boolean[] tableDuJour = new boolean[14];
+			for(int i=0;i<tableDuJour.length;++i){
+				tableDuJour[i] = true;
+			}
+			for(Reservation r : lesReservations){
+				int debutR = r.getHeureDebut();
+				int dureeR = r.getDuree();
+				for(int j=debutR-9;j<(debutR+dureeR)-9;++j){
+					tableDuJour[j] = false;
+				}
+			}
+			//On parcours la table du jour pour chercher un creneau qui correspond aux critères : 
+			for(int i=0;i<14;++i){
+				if(tableDuJour[i] == true){//Si ce creneau est dispo : 
+					++creneauConseq;
+					if(creneauConseq == duree){//On a assez de creneau pour reserver
+						int leMontant = 0;
+						java.util.Date today = new java.util.Date();
+						java.sql.Date dateReserv = laDate, dateConfirm = new Date(today.getTime()), dateCommande = new Date(today.getTime());
+						Salle laSalle = sallesDispo.get(1);
+						laReservation = fabReservation.creerReservation(duree, leMontant, dateReserv, dateCommande, dateConfirm, laSalle, leClient, heureDebut);
+					}
+				}else{
+					heureDebut = i+1;
+				}
+			}
 		}
 		return laReservation;
 	}
