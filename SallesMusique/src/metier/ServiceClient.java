@@ -79,22 +79,20 @@ public class ServiceClient {
 		
 	}
 	
-	public ForfaitClient verfierClientPossedeForfait(Client client) throws SQLException
-	{
+	public ForfaitClient verfierClientPossedeForfait(Client client) throws SQLException{
 		List<Forfait> lesForfaits = FabForfait.getInstance().listerForfait();
 		//pour les 2 types de forfaits (12,24), on regarde si le client en a un et on le retourne
-		for (Forfait f : lesForfaits)
-		{
+		for (Forfait f : lesForfaits){
 			ForfaitClient FC = FabForfaitClient.getInstance().rechercherForfait(f.getIdentifiant(), client.getIdentifiant());
-			if (FC != null)
-			{
+			if (FC != null){
+				System.out.println("okok");
 				return FC;
 			}
 		}
 		//si le client n'a pas de forfait, on retourne null
 		return null;
 	}
-	
+	 
 	public boolean verifierForfaitClientEstValide(ForfaitClient FC) throws SQLException
 	{
 		
@@ -177,7 +175,7 @@ public class ServiceClient {
 			nbHeuresUtilisables = nbheuresDispo;
 			nveauNbHeuresDispo = 0;
 			//mise a jour du credit du forfaitclient => suppression de ce forfait
-			this.statementUtiliserForfaitClient = laConnexion.prepareStatement("delete forfaitCleint where idForfait ="+FC.getIdForfait()+" and idclient ="+FC.getIdClient()+"");
+			this.statementUtiliserForfaitClient = laConnexion.prepareStatement("delete from forfaitClient where idForfait ="+FC.getIdForfait()+" and idclient ="+FC.getIdClient()+"");
 			try
 			{
 			this.statementUtiliserForfaitClient.executeUpdate();
@@ -191,52 +189,52 @@ public class ServiceClient {
 	}
 	
 	
-	public void vendreUnForfait(Client client,Forfait leForfait) throws SQLException
+	public ForfaitClient vendreUnForfait(Client client,Forfait leForfait) throws SQLException
 	{
-		
+		ForfaitClient leForfaitClient = null;
 		boolean possedeUnForfait = false;
 		//verif que le client ne possede pas deja un forfait
-	  ForfaitClient fc = this.verfierClientPossedeForfait(client);
-	  if(fc != null)
-	  {
-		  if(this.verifierForfaitClientEstValide(fc))
+		  ForfaitClient fc = this.verfierClientPossedeForfait(client);
+		  if(fc != null)
 		  {
-			  possedeUnForfait = true;
-			  System.out.println("pas ok : Le client possede deja un forfait");
+			  if(this.verifierForfaitClientEstValide(fc))
+			  {
+				  possedeUnForfait = true;
+				  System.out.println("pas ok : Le client possede deja un forfait");
+			  }
+			  else
+			  {
+				  System.out.println("OK : Le client possedait deja un forfait mais non valide, il a donc ete supprime");
+			  }
 		  }
-		  else
-		  {
-			  System.out.println("OK : Le client possedait deja un forfait mais non valide, il a donc ete supprime");
+		  else{
+			  //ok le client ne possede pas deja de forfait, on le cree
+			  //recuperation du credit
+			  String str[]=leForfait.getNomForfait().split("h");
+			  int credit =  Integer.parseInt(str[0]);
+			  //creation de la date
+			  String format = "dd/MM/yy H:mm:ss";
+			  java.text.SimpleDateFormat formater = new java.text.SimpleDateFormat( format );
+			  java.util.Date dateAujourdhui = new java.util.Date(); 
+			  System.out.println(dateAujourdhui);
+			  java.sql.Date dateSql = new java.sql.Date(dateAujourdhui.getTime());
+			  //creation du forfaitclient
+			  leForfaitClient = FabForfaitClient.getInstance().creerForfaitClient(leForfait.getIdentifiant(), client.getIdentifiant(), credit, dateSql);
 		  }
-	  }
-	  else
-	  {
-		  //ok le client ne possede pas deja de forfait, on le cree
-		  //recuperation du credit
-		  String str[]=leForfait.getNomForfait().split("h");
-		  int credit =  Integer.parseInt(str[0]);
-		  //creation de la date
-		  String format = "dd/MM/yy H:mm:ss";
-		  java.text.SimpleDateFormat formater = new java.text.SimpleDateFormat( format );
-		  java.util.Date dateAujourdhui = new java.util.Date(); 
-		  System.out.println(dateAujourdhui);
-		  java.sql.Date dateSql = new java.sql.Date(dateAujourdhui.getTime());
-		  //creation du forfaitclient
-		 FabForfaitClient.getInstance().creerForfaitClient(leForfait.getIdentifiant(), client.getIdentifiant(), credit, dateSql);
-	  }
-	  
+		  return leForfaitClient;
 	}
 	
 	
 	public static void main(String[] args) throws Exception
 	{	
-	ServiceClient sc = new ServiceClient();
-	ForfaitClient FC = FabForfaitClient.getInstance().rechercherForfait(1, 1);
-	//sc.verifierForfaitClientEstValide(FC);
-	
-	Client c = FabClient.getInstance().rechercherClient(2);
-	Forfait f = FabForfait.getInstance().rechercherForfait(FC.getIdForfait());
-	sc.vendreUnForfait(c, f);
+		ServiceClient sc = new ServiceClient();
+		ForfaitClient FC = FabForfaitClient.getInstance().rechercherForfait(1, 1);
+		//sc.verifierForfaitClientEstValide(FC);
+		
+		Client c = FabClient.getInstance().rechercherClient(2);
+		Forfait f = FabForfait.getInstance().rechercherForfait(FC.getIdForfait());
+		sc.vendreUnForfait(c, f);
+		Connexion.getInstance().close();
 	}
 	
 }

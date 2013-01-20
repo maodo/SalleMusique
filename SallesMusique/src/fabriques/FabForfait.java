@@ -47,7 +47,7 @@ static FabForfait FabF;
 		if(!rs.next()){
 			return null;
 		}else{
-			return new Forfait(rs.getInt(1),rs.getString(2),rs.getInt(3));
+			return new Forfait(idForfait,rs.getString(1),rs.getInt(2));
 		}
 	}
 	
