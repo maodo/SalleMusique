@@ -11,9 +11,9 @@ public class Connexion {
 			try{
 				Class.forName("org.hsqldb.jdbcDriver").newInstance();
 				laConnexion = DriverManager.getConnection("jdbc:hsqldb:file:database/BaseSalleMusique;shutdown=true", "sa",  "");
-				System.out.println("Connexion réussis à  HSQLDB");
+				System.out.println("Connexion rÃ©ussis Ã  HSQLDB");
 			}catch(Exception e){
-				System.out.println("Connexion échouée à  HSQLDB");
+				System.out.println("Connexion Ã©chouÃ©e Ã  HSQLDB");
 			}
 		}
 		return laConnexion;

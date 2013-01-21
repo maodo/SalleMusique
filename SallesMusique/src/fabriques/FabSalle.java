@@ -16,6 +16,7 @@ static FabSalle  FabS;
 	
 	private PreparedStatement statementRechercher;
 	private PreparedStatement statementLister;
+	private PreparedStatement statementListerParType;
 	private Connection laConnexion;
 	
 	public FabSalle(){
@@ -27,6 +28,7 @@ static FabSalle  FabS;
 			this.laConnexion = Connexion.getInstance();
 			this.statementRechercher = laConnexion.prepareStatement("SELECT typeSalle FROM Salle WHERE idSalle = ?;");
 			this.statementLister = laConnexion.prepareStatement("SELECT * FROM Salle;");
+			this.statementListerParType = laConnexion.prepareStatement("SELECT * FROM Salle WHERE typeSalle = ?");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -41,6 +43,19 @@ static FabSalle  FabS;
 		}
 		return FabS;
 	}
+	
+	public List<Salle> listerSalleParType(TypeSalle leType) throws SQLException{
+		List<Salle> lesSalles = new ArrayList<Salle>();
+		this.statementListerParType.clearParameters();
+		this.statementListerParType.setInt(1, leType.getIdentifiant());
+		ResultSet rs = this.statementListerParType.executeQuery();
+		while(rs.next()){
+			TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(rs.getInt(2));
+			Salle  uneSalle = new Salle (rs.getInt(1),leTypeSalle);
+			lesSalles.add(uneSalle);
+		}
+		return lesSalles;
+	}	
 	
 	public Salle rechercherSalle(int idSalle) throws SQLException{
 		this.statementRechercher.clearParameters();
