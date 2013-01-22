@@ -62,7 +62,8 @@ public class TestJohnReserveManuellementUneSalle {
 			this.servReservation.annulerReservation(r);
 		}
 		this.laReservation = this.servReservation.reserverSalleManuellement(laSalle, leClient, laDate, heureDebut, duree);
-		assertNotNull("Cette reservation ne doit pas être null",this.laReservation);
+		assertNotNull("Cette reservation ne doit pas etre null",this.laReservation);
+		assertNotNull("Cette reservation ne doit pas etre null",servReservation.rechercherUneReservation(this.laReservation.getIdentifiant()));
 	}
 	
 	@Test

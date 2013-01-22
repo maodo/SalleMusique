@@ -1,4 +1,5 @@
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -12,15 +13,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import connecteur.Connexion;
-
 import donnees.Client;
 import donnees.Reservation;
-import donnees.Tarif;
 import donnees.TrancheHoraire;
 import donnees.TypeSalle;
 import fabriques.FabClient;
 import fabriques.FabReservation;
-import fabriques.FabTarifPonctuel;
 import fabriques.FabTranche;
 import fabriques.FabTypeSalle;
 
@@ -53,13 +51,12 @@ public class TestJohnAnnuleUneReservation {
 		GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
 		Date dateReservation = new Date(leCalendrier.getTimeInMillis());
 		TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(2);//Grande salle
-		Tarif leTarif = FabTarifPonctuel.getInstance().rechercherTarifPonctuel(duree,leTypeSalle.getIdentifiant());
 		TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(2);//L'apres midi
 		
 		//Pour le test : on fait une reservation, et on verifie qu'elle existe (via la fabrique).
 		//Puis on appel annulerReservation(), et on vérifie que cetet meme reservation n'existe plus
 		this.laReservation = this.servReservation.reserverSalleAutomatiquement(leClient,
-				dateReservation,duree,leTarif,leTypeSalle,laTranche);
+				dateReservation,duree,leTypeSalle,laTranche,false);
 		assertNotNull("La reservation ne doit pas etre null",this.laReservation);
 		this.servReservation.annulerReservation(this.laReservation);
 		this.laReservation = this.servReservation.rechercherUneReservation(this.laReservation.getIdentifiant());

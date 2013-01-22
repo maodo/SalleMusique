@@ -26,6 +26,7 @@ public class TestJohnCreationDunClient extends TestCase {
 	@Before
 	public void setUp(){
 		this.fabClient = FabClient.getInstance();
+		this.leClient = null;
 	}
 	
 	@Test
@@ -49,6 +50,8 @@ public class TestJohnCreationDunClient extends TestCase {
 	
 	@Test
 	public void testJohnListeLesClients() throws Exception{
+		//On va faire une requete qui compte le nombre de clients en base
+		//et on va comparer le resultat avec la taille de la liste renvoi par listerCient();
 		int nbClient = -1;
 		List<Client> desClients;
 		PreparedStatement query = Connexion.getInstance().prepareStatement("SELECT count(*) FROM Client");

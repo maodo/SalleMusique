@@ -14,18 +14,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import connecteur.Connexion;
-
 import donnees.Client;
 import donnees.Reservation;
 import donnees.Salle;
-import donnees.Tarif;
 import donnees.TrancheHoraire;
 import donnees.TypeSalle;
 import fabriques.FabClient;
 import fabriques.FabReservation;
 import fabriques.FabSalle;
-import fabriques.FabTarifPonctuel;
 import fabriques.FabTranche;
 import fabriques.FabTypeSalle;
 
@@ -49,7 +45,6 @@ public class TestJohnReserveAutomatiquementUneSalle {
 		for(Reservation r : lesReservation){
 			System.out.println(r.getIdentifiant()+"(id) "+r.getSalle().getIdentifiant()+"(idSalle) "+r.getHeureDebut()+"(heureDeb) "+r.getDuree()+"(duree) "+r.getDateReservation()+"(dateR) "+r.getDateCommande()+"(dateCom) "+r.getDateConfirmation()+"(dateConf) "+r.getClient().getIdentifiant()+"(idClient)");
 		}
-		Connexion.getInstance().close();
 	}
 	
 	@Test
@@ -58,11 +53,10 @@ public class TestJohnReserveAutomatiquementUneSalle {
 		GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
 		Date dateReservation = new Date(leCalendrier.getTimeInMillis());
 		TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(2);//Grande salle
-		Tarif leTarif = FabTarifPonctuel.getInstance().rechercherTarifPonctuel(duree,leTypeSalle.getIdentifiant());
 		TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(1);//le matin
 		
 		this.laReservation = this.servReservation.reserverSalleAutomatiquement(leClient,
-				dateReservation,duree,leTarif,leTypeSalle,laTranche);
+				dateReservation,duree,leTypeSalle,laTranche,false);
 		
 		if(this.laReservation != null){
 			Reservation uneReservation = FabReservation.getInstance().rechercherReservation(this.laReservation.getIdentifiant());
@@ -84,20 +78,18 @@ public class TestJohnReserveAutomatiquementUneSalle {
 			GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
 			java.sql.Date dateReservation = new Date(leCalendrier.getTimeInMillis());
 			int duree = 15;
-			Tarif leTarif = FabTarifPonctuel.getInstance().rechercherTarifPonctuel(1,leTypeSalle.getIdentifiant());
 			TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(1);//le matin
 			
-			this.servReservation.reserverSalleAutomatiquement(leClient,dateReservation,duree,leTarif,leTypeSalle,laTranche);
+			this.servReservation.reserverSalleAutomatiquement(leClient,dateReservation,duree,leTypeSalle,laTranche,false);
 		}
 		
 		GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
 		java.sql.Date dateReservation = new Date(leCalendrier.getTimeInMillis());
 		int duree = 1;
-		Tarif leTarif = FabTarifPonctuel.getInstance().rechercherTarifPonctuel(1,leTypeSalle.getIdentifiant());
 		TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(1);//le matin
 		Client leClient = FabClient.getInstance().rechercherClient(1);
 		this.laReservation = this.servReservation.reserverSalleAutomatiquement(leClient,
-				dateReservation,duree,leTarif,leTypeSalle,laTranche);
+				dateReservation,duree,leTypeSalle,laTranche,false);
 		assertNull("Cette reservation ne doit pas pouvoir etre faites",this.laReservation);
 	}
 }

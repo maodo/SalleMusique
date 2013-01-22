@@ -10,15 +10,12 @@ import org.junit.Test;
 import donnees.Client;
 import donnees.Forfait;
 import donnees.Reservation;
-import donnees.Tarif;
 import donnees.TrancheHoraire;
 import donnees.TypeSalle;
 import fabriques.FabClient;
 import fabriques.FabForfait;
 import fabriques.FabForfaitClient;
-import fabriques.FabReservation;
 import fabriques.FabSalle;
-import fabriques.FabTarifPonctuel;
 import fabriques.FabTranche;
 import fabriques.FabTypeSalle;
 
@@ -49,7 +46,6 @@ public class TestJohnEditeLesInfosDunClient {
 		GregorianCalendar leCalendrier = new GregorianCalendar(2013,1,1);
 		Date dateReservation = new Date(leCalendrier.getTimeInMillis());
 		TypeSalle leTypeSalle = FabTypeSalle.getInstance().rechercherTypeSalle(1);//petite salle
-		Tarif leTarif = FabTarifPonctuel.getInstance().rechercherTarifPonctuel(duree,leTypeSalle.getIdentifiant());
 		TrancheHoraire laTranche = FabTranche.getInstance().rechercherTranche(1);//le matin
 		
 		this.fabForfaitClient.supprimerForfaitClient(1, 1);//suppression de ses forfaits	
@@ -57,8 +53,10 @@ public class TestJohnEditeLesInfosDunClient {
 		this.fabForfaitClient.creerForfaitClient(1, 1, 1, dateReservation, 1, 50);//creation d'1 forfait petites salles a 50 euros, dans lequel on met 1h de credit
 
 		//creation d'une reservation de 3 heures qui commence la matin pour une petite salle
-		Reservation laReservation = this.servReservation.reserverSalleAutomatiquement(client, dateReservation, duree, leTarif, FabSalle.getInstance().rechercherSalle(1).getTypeSalle(), laTranche);
-		servClient.confirmerUneServation(client, laReservation);
+		Reservation laReservation = this.servReservation.reserverSalleAutomatiquement(client, dateReservation, duree, 
+				FabSalle.getInstance().rechercherSalle(1).getTypeSalle(), laTranche,false);
+		System.out.println(laReservation.getHeureDebut());
+		this.servClient.confirmerUneServation(client, laReservation);
 	}
 	
 	public void testJohnVendUnForfait(){
