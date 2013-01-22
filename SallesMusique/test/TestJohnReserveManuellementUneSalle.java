@@ -57,7 +57,7 @@ public class TestJohnReserveManuellementUneSalle {
 		int heureDebut = 9;
 		
 		//On supprime toutes les reservations pour ce jour/cette salle, pour être sur qu'on pourra reserver
-		List<Reservation> lesReservationsExistantes = FabReservation.getInstance().rechercherReservationDunJourEtDuneSalle(laDate, laSalle);
+		List<Reservation> lesReservationsExistantes = FabReservation.getInstance().listerReservationDunJourEtDuneSalle(laDate, laSalle);
 		for(Reservation r : lesReservationsExistantes){
 			this.servReservation.annulerReservation(r);
 		}
@@ -78,7 +78,7 @@ public class TestJohnReserveManuellementUneSalle {
 		int duree = 2;
 		int heureDebut = 10;
 		//On supprime toutes les reservations pour ce jour/cette salle, pour être sur qu'on pourra reserver
-		List<Reservation> lesReservationsExistantes = FabReservation.getInstance().rechercherReservationDunJourEtDuneSalle(laDate, laSalle);
+		List<Reservation> lesReservationsExistantes = FabReservation.getInstance().listerReservationDunJourEtDuneSalle(laDate, laSalle);
 		for(Reservation r : lesReservationsExistantes){
 			this.servReservation.annulerReservation(r);
 		}
@@ -108,7 +108,7 @@ public class TestJohnReserveManuellementUneSalle {
 		int duree = 2;
 		int heureDebut = 10;
 		//On supprime toutes les reservations pour ce jour/cette salle, pour être sur qu'on pourra reserver
-		List<Reservation> lesReservationsExistantes = FabReservation.getInstance().rechercherReservationDunJourEtDuneSalle(laDate, laSalle);
+		List<Reservation> lesReservationsExistantes = FabReservation.getInstance().listerReservationDunJourEtDuneSalle(laDate, laSalle);
 		for(Reservation r : lesReservationsExistantes){
 			this.servReservation.annulerReservation(r);
 		}

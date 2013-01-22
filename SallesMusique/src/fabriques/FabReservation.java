@@ -20,6 +20,7 @@ public class FabReservation {
 	private PreparedStatement statementNouvelId;
 	private PreparedStatement statementRechercher;
 	private PreparedStatement statementLister;
+	private PreparedStatement statementResDunJourEtDuneSalle;
 	private PreparedStatement statementResDunJour;
 	private PreparedStatement statementSuppr;
 	private Connection laConnexion;
@@ -35,7 +36,8 @@ public class FabReservation {
 			this.statementNouvelId = laConnexion.prepareStatement("SELECT MAX(idReservation) FROM Reservation;");
 			this.statementRechercher = laConnexion.prepareStatement("SELECT * FROM Reservation WHERE idReservation = ?");
 			this.statementLister = laConnexion.prepareStatement("SELECT * FROM Reservation;");
-			this.statementResDunJour = laConnexion.prepareStatement("SELECT * FROM Reservation WHERE dateReservation = ? AND idSalle = ?;");
+			this.statementResDunJourEtDuneSalle = laConnexion.prepareStatement("SELECT * FROM Reservation WHERE dateReservation = ? AND idSalle = ?;");
+			this.statementResDunJour = laConnexion.prepareStatement("SELECT * FROM Reservation WHERE dateReservation = ?;");
 			this.statementSuppr = laConnexion.prepareStatement("DELETE FROM Reservation WHERE idReservation = ?");
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -103,13 +105,13 @@ public class FabReservation {
 		return lesReservation;
 	}
 
-	public List<Reservation> rechercherReservationDunJourEtDuneSalle(
+	public List<Reservation> listerReservationDunJourEtDuneSalle(
 			java.sql.Date laDate, Salle laSalle) throws SQLException{
 		List<Reservation> desReservations = new ArrayList<Reservation>();
-		this.statementResDunJour.clearParameters();
-		this.statementResDunJour.setDate(1,laDate);
-		this.statementResDunJour.setInt(2,laSalle.getIdentifiant());
-		ResultSet rs = this.statementResDunJour.executeQuery();
+		this.statementResDunJourEtDuneSalle.clearParameters();
+		this.statementResDunJourEtDuneSalle.setDate(1,laDate);
+		this.statementResDunJourEtDuneSalle.setInt(2,laSalle.getIdentifiant());
+		ResultSet rs = this.statementResDunJourEtDuneSalle.executeQuery();
 		while(rs.next()){
 			Salle uneSalle = FabSalle.getInstance().rechercherSalle(rs.getInt(7));
 			Client unClient = FabClient.getInstance().rechercherClient(rs.getInt(8));
@@ -124,5 +126,20 @@ public class FabReservation {
 		this.statementSuppr.clearParameters();
 		this.statementSuppr.setInt(1,laReservation.getIdentifiant());
 		return this.statementSuppr.execute();
+	}
+
+	public List<Reservation> listerReservationDunJour(java.sql.Date laDate) throws SQLException{
+		List<Reservation> desReservations = new ArrayList<Reservation>();
+		this.statementResDunJour.clearParameters();
+		this.statementResDunJour.setDate(1,laDate);
+		ResultSet rs = this.statementResDunJour.executeQuery();
+		while(rs.next()){
+			Salle uneSalle = FabSalle.getInstance().rechercherSalle(rs.getInt(7));
+			Client unClient = FabClient.getInstance().rechercherClient(rs.getInt(8));
+			
+			Reservation uneReservation = new Reservation(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getDate(4),rs.getDate(5),rs.getDate(6),uneSalle,unClient,rs.getInt(9));
+			desReservations.add(uneReservation);
+		}
+		return desReservations;
 	}
 }

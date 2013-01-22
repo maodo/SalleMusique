@@ -68,7 +68,7 @@ public class ServiceReservation {
 			
 			if(!trouve){
 				//On charge les reservation de ce jour là : 
-				List<Reservation> lesReservations = fabReservation.rechercherReservationDunJourEtDuneSalle(laDate, laSalle);
+				List<Reservation> lesReservations = fabReservation.listerReservationDunJourEtDuneSalle(laDate, laSalle);
 				if(lesReservations.isEmpty()){
 					int leMontant = this.calculerMontantInitial(leTypeSalle, duree, laTranche);
 					java.util.Date today = new java.util.Date();
@@ -82,15 +82,16 @@ public class ServiceReservation {
 				}else{
 					int[] tableDuJour = this.construireTableauDuJourPourReservManuel(laDate, laSalle);
 					int creneauConseq = 0;
-					int indiceHeureFin = heureDebut-9+duree;
+					int indiceHeureFin = 15;
 					int idAncienCreneau = -1;
 					for(int i=heureDebut-9;i<indiceHeureFin;++i){
-						if(tableDuJour[i] != -2){//Si le creneau n'est pas indisponible
-							if(tableDuJour[i] != -1){
-								idAncienCreneau = tableDuJour[i];
-							}
+						if(tableDuJour[i] != -1 && tableDuJour[i] != -2){
+							idAncienCreneau = tableDuJour[i];
+						}
+						if(tableDuJour[i] != -2){//Si le creneau est disponible
 							++creneauConseq;
-							if(creneauConseq == duree && trouve == false && heureEstDansTranche(i+7,laTranche)){//On a assez de place pour caller ce creneau. Donc on reservce :
+							
+							if(creneauConseq == duree && trouve == false && heureEstDansTranche(heureDebut,laTranche)){//On a assez de place pour caller ce creneau. Donc on reservce :
 								if(tableDuJour[i] != -1 && pourResHebdo){//On empiete sur une reservation non confirmée : on la supprime avant d'insérer la notre
 									Reservation ancienneReservation = fabReservation.rechercherReservation(idAncienCreneau);
 									this.annulerReservation(ancienneReservation);
@@ -103,6 +104,8 @@ public class ServiceReservation {
 								dateConfirm = this.retrancherJour(dateConfirm, 7);
 								laReservation = fabReservation.creerReservation(duree, leMontant, dateReserv, dateCommande, dateConfirm, laSalle, leClient, heureDebut);
 								trouve = true;
+							}else{
+								heureDebut = heureDebut+1;
 							}
 						}else{
 							heureDebut = heureDebut+1;
@@ -140,7 +143,7 @@ public class ServiceReservation {
 	public Reservation reserverSalleManuellement(Salle laSalle, Client leClient, Date laDate, int heureDebut, int duree) throws SQLException{
 		Reservation laReservation = null;
 		//On regarde s'il y a déjà une reservation pour cette salle ce jour
-		List<Reservation> lesReservations = fabReservation.rechercherReservationDunJourEtDuneSalle(laDate, laSalle);
+		List<Reservation> lesReservations = fabReservation.listerReservationDunJourEtDuneSalle(laDate, laSalle);
 		if(lesReservations.isEmpty()){
 			//Aucune reservation ce jour là: on peut creer la reservation
 			int leMontant = 0;
@@ -276,8 +279,8 @@ public class ServiceReservation {
 	 * @param laSalle La salle pour laquelle on veut voir les reservations
 	 * @return Le tableau de boolean décrit ci dessus
 	 */
-	private int[] construireTableauDuJourPourReservManuel(Date laDate, Salle laSalle) throws SQLException{
-		List<Reservation> lesReservations = fabReservation.rechercherReservationDunJourEtDuneSalle(laDate, laSalle);
+	public int[] construireTableauDuJourPourReservManuel(Date laDate, Salle laSalle) throws SQLException{
+		List<Reservation> lesReservations = fabReservation.listerReservationDunJourEtDuneSalle(laDate, laSalle);
 		int[] tableDuJour = new int[15];//15 car la location loue pour 14h de la journée, 9h->0h
 		for(int i=0;i<tableDuJour.length;++i){
 			tableDuJour[i] = -1;
@@ -292,6 +295,24 @@ public class ServiceReservation {
 				}else{
 					tableDuJour[j] = r.getIdentifiant();
 				}
+			}
+		}
+		System.out.println(laDate);
+		return tableDuJour;
+	}
+	
+	public int[] construireTableauDuJour(Date laDate, Salle laSalle) throws SQLException{
+		List<Reservation> lesReservations = fabReservation.listerReservationDunJourEtDuneSalle(laDate, laSalle);
+		int[] tableDuJour = new int[15];//15 car la location loue pour 14h de la journée, 9h->0h
+		for(int i=0;i<tableDuJour.length;++i){
+			tableDuJour[i] = -1;
+		}
+		for(Reservation r : lesReservations){
+			int debutR = r.getHeureDebut();
+			int dureeR = r.getDuree();
+			int indiceHeureFin = (debutR+dureeR)-9;
+			for(int j=debutR-9;j<indiceHeureFin;++j){
+				tableDuJour[j] = r.getIdentifiant();
 			}
 		}
 		return tableDuJour;
@@ -355,6 +376,14 @@ public class ServiceReservation {
 		return sqlDate;
 	}
 	
+	public List<Reservation> listerLesReservationsDunJour(java.sql.Date laDate) throws SQLException{
+		return fabReservation.listerReservationDunJour(laDate);
+	}
+	
+	public List<Reservation> listerLesReservationsDunJourEtDuneSalle(java.sql.Date laDate, Salle laSalle) throws SQLException{
+		return fabReservation.listerReservationDunJourEtDuneSalle(laDate, laSalle);
+	}
+	
 	public void annulerToutesLesReservation() throws SQLException{
 		List<Reservation> lesRes = FabReservation.getInstance().listerReservation();
 		for(Reservation r : lesRes){
@@ -365,7 +394,7 @@ public class ServiceReservation {
 	public void afficherReservation() throws SQLException {
 		List<Reservation> lesRes = FabReservation.getInstance().listerReservation();
 		for(Reservation r : lesRes){
-			System.out.println(r.getIdentifiant()+"(id) "+r.getClient().getIdentifiant()+"(client) "+r.getDateReservation()+"(dateR) "+r.getHeureDebut()+"(heureDeb) "+r.getSalle().getIdentifiant()+"(salle)");
+			System.out.println(r.getIdentifiant()+"(id) "+r.getClient().getIdentifiant()+"(client) "+r.getDateReservation()+"(dateR) "+r.getHeureDebut()+"(heureDeb) "+r.getDuree()+"(duree) "+r.getSalle().getIdentifiant()+"(salle)");
 		}
 	}
 }
